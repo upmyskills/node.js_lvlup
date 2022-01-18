@@ -1,13 +1,13 @@
 const process = require('process');
-// const fs = require('fs');
+const { createWriteStream, createReadStream } = require('fs');
 const { pipeline } = require('stream');
 const { CustomTransformStream } = require('./CustomTransformStream');
-const { validateConfig } = require('./utils');
+const { validateConfig, validateTemplate } = require('./utils');
 
 const configCommand = ['-c', '--config'];
 const outputCommand = ['-o', '--output'];
 const inputCommand = ['-i', '--input'];
-const currentConfig = { conf: '', outputFileName: 'outfile.txt', inputFileName: 'datafile.txt'};
+const currentConfig = { conf: '', outputFileName: '', inputFileName: ''};
 
 const args = process.argv.slice(2);
 
@@ -37,8 +37,11 @@ for (let i = 0; i < args.length; i += 2) {
 
 validateConfig(currentConfig.conf);
 
+const stdout = currentConfig.outputFileName ? createWriteStream(`./${currentConfig.outputFileName}`) : process.stdout;
+const stdin = currentConfig.inputFileName ? createReadStream(`./${currentConfig.inputFileName}`) : process.stdin;
+
 const tr = currentConfig.conf.map((code) => new CustomTransformStream(code));
 
-pipeline(process.stdin, ...tr, process.stdout, err => { console.log(err)});
+pipeline(stdin, ...tr, stdout, (err) => { process.stderr.write(err)});
 
 console.log(currentConfig);
