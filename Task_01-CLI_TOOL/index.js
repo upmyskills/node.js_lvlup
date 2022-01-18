@@ -1,7 +1,8 @@
 const process = require('process');
-const fs = require('fs');
+// const fs = require('fs');
 const { pipeline } = require('stream');
 const { CustomTransformStream } = require('./CustomTransformStream');
+const { validateConfig } = require('./utils');
 
 const configCommand = ['-c', '--config'];
 const outputCommand = ['-o', '--output'];
@@ -10,14 +11,13 @@ const currentConfig = { conf: '', outputFileName: 'outfile.txt', inputFileName: 
 
 const args = process.argv.slice(2);
 
-const validateConfig = (conf) => {
-  const regExp = /(A)|(C[1|0])|(R[1|0])/;
-  for (let i = 0; i < conf.length; i++) {
-    if (conf[i].match(regExp) === null) {
-      process.exit();
-    }
-  }
-};
+console.log();
+
+validateTemplate(args, inputCommand);
+validateTemplate(args, outputCommand);
+validateTemplate(args, configCommand);
+
+console.log(args);
 
 for (let i = 0; i < args.length; i += 2) {
   const [tempParam, tempVal] = args.slice(i, args.length);
@@ -38,6 +38,7 @@ for (let i = 0; i < args.length; i += 2) {
 validateConfig(currentConfig.conf);
 
 const tr = currentConfig.conf.map((code) => new CustomTransformStream(code));
+
 pipeline(process.stdin, ...tr, process.stdout, err => { console.log(err)});
 
 console.log(currentConfig);

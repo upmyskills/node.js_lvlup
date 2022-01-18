@@ -6,7 +6,7 @@ class CustomTransformStream extends Transform {
     this.alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
     this.subAlphabet = [];
     [this.code, this.variant] = conf.split('');
-    console.log(`Current config is ${this.code} ${this.variant}!`);
+    // console.log(`Current config is ${this.code} ${this.variant}!`);
   }
 
   _construct(cb) {
@@ -15,7 +15,6 @@ class CustomTransformStream extends Transform {
     if (this.code === 'R') step = 8;
     if (this.code === 'C') step = 1;
 
-    console.log(this.variant == true);
     if (this.variant == true) {
       this.subAlphabet = [...this.alphabet.slice(step), ...this.alphabet.slice(0, step)];
     } else if (typeof(this.variant) === 'undefined') {
