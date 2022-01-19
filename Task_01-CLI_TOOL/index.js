@@ -1,23 +1,21 @@
 const process = require('process');
-const { createWriteStream, createReadStream } = require('fs');
 const { pipeline } = require('stream');
-const { CustomTransformStream } = require('./CustomTransformStream');
+const { promisify } = require('util');
 const { validateConfig, validateTemplate } = require('./utils');
+const { CustomTransformStream } = require('./CustomTransformStream');
+const { CustomWriteStream } = require('./CustomWriteStream');
+const { CustomReadStream } = require('./CustomReadStream');
 
 const configCommand = ['-c', '--config'];
 const outputCommand = ['-o', '--output'];
 const inputCommand = ['-i', '--input'];
-const currentConfig = { conf: '', outputFileName: '', inputFileName: ''};
+const currentConfig = { conf: [], outputFileName: '', inputFileName: ''};
 
 const args = process.argv.slice(2);
-
-console.log();
 
 validateTemplate(args, inputCommand);
 validateTemplate(args, outputCommand);
 validateTemplate(args, configCommand);
-
-console.log(args);
 
 for (let i = 0; i < args.length; i += 2) {
   const [tempParam, tempVal] = args.slice(i, args.length);
@@ -37,11 +35,25 @@ for (let i = 0; i < args.length; i += 2) {
 
 validateConfig(currentConfig.conf);
 
-const stdout = currentConfig.outputFileName ? createWriteStream(`./${currentConfig.outputFileName}`) : process.stdout;
-const stdin = currentConfig.inputFileName ? createReadStream(`./${currentConfig.inputFileName}`) : process.stdin;
-
 const tr = currentConfig.conf.map((code) => new CustomTransformStream(code));
 
-pipeline(stdin, ...tr, stdout, (err) => { process.stderr.write(err)});
+const stdout = currentConfig.outputFileName ? new CustomWriteStream(`./${currentConfig.outputFileName}`) : process.stdout;
+const stdin = currentConfig.inputFileName ? new CustomReadStream(`./${currentConfig.inputFileName}`) : process.stdin;
+
+const piplineAsync = promisify(pipeline);
+(async () => {
+  try {
+    await piplineAsync(
+      stdin,
+      ...tr,
+      stdout,
+    );
+  }
+  catch(err) {
+    console.log('Error!\n', err);
+  }
+})();
+
+// pipeline(stdin, ...tr, stdout, (err) => { console.log(err) });
 
 console.log(currentConfig);

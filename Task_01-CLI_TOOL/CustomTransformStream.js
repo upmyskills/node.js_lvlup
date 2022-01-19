@@ -32,7 +32,8 @@ class CustomTransformStream extends Transform {
   //   console.log(code , variant);
   // }
   _transform(chunk, enc, cb) {
-    console.log(`Use ${this.code}${this.variant}!`);
+    // console.log(`Use ${this.code}${this.variant}!`);
+    // console.log(chunk.toString());
     const phrase = chunk.toString().trim().split('');
     const codePhrase = phrase.map((letter) => {
       const isUpperCase = letter === letter.toUpperCase();
@@ -40,7 +41,7 @@ class CustomTransformStream extends Transform {
       if (!this.alphabet.includes(letter.toUpperCase())) return letter;
       return isUpperCase ? this.subAlphabet[index].toUpperCase() : this.subAlphabet[index].toLowerCase();
     });
-    console.log(codePhrase);
+    // console.log(codePhrase);
     this.push(`${codePhrase.join('')}\n`);
 
     cb();
